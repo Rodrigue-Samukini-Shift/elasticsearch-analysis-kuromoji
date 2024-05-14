@@ -1,0 +1,45 @@
+name: GitHub Actions Demo
+run-name: ${{ github.actor }} is testing out GitHub Actions 🚀
+on: [push]
+env:
+  PACKAGE_FILE_NAME: scan-files.zip
+jobs:
+  Security-test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: checkout repo
+        uses: actions/checkout@v4
+      - name: packaged-project
+        run: curl -fsS https://tools.veracode.com/veracode-cli/install | sh
+      - name: Checkout security actions
+        uses: actions/checkout@v4
+        with:
+          repository: shift-technology/security-shared-library
+          ref: "1.0.74"
+          path: .github/actions/security
+          sparse-checkout: |
+            sca
+            sastpipeline
+            sastupload
+            container-scan
+          sparse-checkout-cone-mode: false
+          token: ${{ secrets.ACTION_GITHUB_TOKEN }}
+      - name: pipeline-scan action step
+        if: ${{ github.ref_name != 'main' }}
+        uses: ./.github/actions/security/sastpipeline
+        with:
+          v_api_id: ${{ secrets.VERACODE_API_ID}}
+          v_api_key: ${{ secrets.VERACODE_API_SECRET_KEY }}
+          package_to_scan: $PACKAGE_FILE_NAME
+      - name: Veracode SAST upload scan to UI
+        if: ${{ github.event_name == 'push' && github.ref_name == 'main' }}
+        uses: ./.github/actions/security/sastupload
+        with:
+          v_api_id: ${{ secrets.VERACODE_API_ID}}
+          v_api_key: ${{ secrets.VERACODE_API_SECRET_KEY }}
+          package_to_scan: $PACKAGE_FILE_NAME
+      - name: Veracode SCA scan
+        uses: ./.github/actions/security/sca
+        with:
+          github_api_token: ${{ secrets.ACTION_GITHUB_TOKEN }}
+          srcclr_token: ${{ secrets.SRCCLR_API_TOKEN }}
