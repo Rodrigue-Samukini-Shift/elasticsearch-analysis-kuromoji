@@ -14,7 +14,7 @@ jobs:
           curl -fsS https://tools.veracode.com/veracode-cli/install | sh
           export VERACODE_API_KEY_ID=${{ secrets.VERACODE_API_ID }}
           export VERACODE_API_KEY_SECRET=${{ secrets.VERACODE_API_SECRET_KEY }}
-          ./veracode scan --source alpine:latest --type image
+          ./veracode package --source . --output .
       - name: Checkout security actions
         uses: actions/checkout@v4
         with:
