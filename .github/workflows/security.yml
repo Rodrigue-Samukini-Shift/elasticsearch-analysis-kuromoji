@@ -2,7 +2,7 @@ name: GitHub Actions Demo
 run-name: ${{ github.actor }} is testing out GitHub Actions 🚀
 on: [push]
 env:
-  PACKAGE_FILE_NAME: scan-files.zip
+  PACKAGE_FILE_NAME: ${{ github.event.repository.name }}*.*
 jobs:
   Security-test:
     runs-on: ubuntu-latest
